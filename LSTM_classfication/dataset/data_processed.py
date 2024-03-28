@@ -4,8 +4,6 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
-
-
 # success
 def split_list(list):
     temp = []
@@ -47,22 +45,24 @@ def get_unique_filename(filename,counter):
 
 def chage_filename(filename,counter):
     flag = counter
-    while is_filename_exists(filename):
+    newfilename = filename
+    while is_filename_exists(newfilename):
         flag += 1
-        filename = get_unique_filename(get_new_filename(filename),flag)
-    return filename
+        newfilename = get_unique_filename(get_new_filename(filename),flag)
+    return f"{newfilename}.csv"
 
-#******************************************
-def write_csv(data_write,root):
+def write_csv(data_write,savedir):
     for i in range(len(data_write)):
-        name = f"{root}/{data_write[i][0][0]}.csv"
-        with open(chage_filename(name,0),'w+',newline="") as csvfile:
+        name = f"{savedir}/{data_write[i][0][0]}.csv"
+        with open(chage_filename(name,0),'w',newline="") as csvfile:
             a = csv.writer(csvfile)
-            a.writerow(['SensorId', ' TimeStamp (s)', ' FrameNumber',' QuatW', ' QuatX', ' QuatY',' QuatZ',' LinAccX (g)',' LinAccY (g)',' LinAccZ (g)'])
+            a.writerow(['SensorId', ' TimeStamp (s)', ' FrameNumber',' QuatW', ' QuatX', ' QuatY',' QuatZ',
+                        ' LinAccX (g)',' LinAccY (g)',' LinAccZ (g)',
+                        'rm0','rm1','rm2','rm3','rm4','rm5','rm6','rm7','rm8'])
             a.writerows(data_write[i])
 
 def quat2martix(w,x,y,z):
-    martix = []
+    martix = [0 for i in range(9)]
     martix[0] = 1-2*y*y-2*z*z
     martix[1] = 2*x*y-2*w*z 
     martix[2] = 2*w*y+ 2*x*z
@@ -74,6 +74,14 @@ def quat2martix(w,x,y,z):
     martix[8] = 1-2*x*x-2*y*y
     return martix
 
+def creat_file(f_path):
+    split_fliename = f_path.split('/')
+    split_fliename = os.path.splitext(split_fliename[-1])
+    savefile = f"LSTM_classfication/dataset/{split_fliename[0]}_solved"
+    if not os.path.exists(savefile):
+        os.makedirs(savefile)
+    return savefile
+
 
 
 def main():
@@ -81,10 +89,12 @@ def main():
     root.withdraw()
 
     f_path = filedialog.askopenfilename()
+    savedir = creat_file(f_path)
 
     data = pd.read_csv(f"{f_path}")
     data = pd.DataFrame(data)
-    df = data[['SensorId', ' TimeStamp (s)', ' FrameNumber',' QuatW', ' QuatX', ' QuatY',' QuatZ',' LinAccX (g)',' LinAccY (g)',' LinAccZ (g)']]
+    df = data[['SensorId', ' TimeStamp (s)', ' FrameNumber',' QuatW', ' QuatX', ' QuatY',' QuatZ',
+               ' LinAccX (g)',' LinAccY (g)',' LinAccZ (g)']]
 
     Sensor = df['SensorId'].to_list()
     time = df[' TimeStamp (s)'].to_list()
@@ -109,10 +119,14 @@ def main():
     data_all.append(LinAccY)
     data_all.append(LinAccZ)
 
-
     writer = split_list(data_all)
-    print(writer)
-    write_csv(writer,f_path)
+    for i in range(len(writer)):
+        for j in range(len(writer[i])):
+                temp = quat2martix(writer[i][j][3],writer[0][i][4],writer[0][i][5],writer[0][i][6])
+                for k in range(len(temp)):
+                    writer[i][j].append(temp[k])
+
+    write_csv(writer,savedir)
 
 
 main()

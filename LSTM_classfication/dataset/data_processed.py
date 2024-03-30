@@ -3,6 +3,7 @@ import csv
 import os
 import tkinter as tk
 from tkinter import filedialog
+from scipy.spatial.transform import Rotation as R
 
 # success
 def split_list(list):
@@ -53,26 +54,13 @@ def chage_filename(filename,counter):
 
 def write_csv(data_write,savedir):
     for i in range(len(data_write)):
-        name = f"{savedir}/{data_write[i][0][0]}.csv"
+        name = f"{savedir}/{data_write[i][0][0]}"
         with open(chage_filename(name,0),'w',newline="") as csvfile:
             a = csv.writer(csvfile)
             a.writerow(['SensorId', ' TimeStamp (s)', ' FrameNumber',' QuatW', ' QuatX', ' QuatY',' QuatZ',
                         ' LinAccX (g)',' LinAccY (g)',' LinAccZ (g)',
                         'rm0','rm1','rm2','rm3','rm4','rm5','rm6','rm7','rm8'])
             a.writerows(data_write[i])
-
-def quat2martix(w,x,y,z):
-    martix = [0 for i in range(9)]
-    martix[0] = 1-2*y*y-2*z*z
-    martix[1] = 2*x*y-2*w*z 
-    martix[2] = 2*w*y+ 2*x*z
-    martix[3] = 2*x*y+2*w*z
-    martix[4] = 1-2*x*x-2*z*z 
-    martix[5] = 2*y*z-2*w*x 
-    martix[6] = 2*x*z-2*w*y 
-    martix[7] = 2*w*x+2*y*z 
-    martix[8] = 1-2*x*x-2*y*y
-    return martix
 
 def creat_file(f_path):
     split_fliename = f_path.split('/')
@@ -120,12 +108,18 @@ def main():
     data_all.append(LinAccZ)
 
     writer = split_list(data_all)
+    
+    r = R.from_quat([writer[1][0][3],writer[1][0][4],writer[1][0][5],writer[1][0][6]])
+    print(writer[1][0][3],writer[1][0][4],writer[1][0][5],writer[1][0][6])
+    print(r.as_matrix())
     for i in range(len(writer)):
         for j in range(len(writer[i])):
-                temp = quat2martix(writer[i][j][3],writer[0][i][4],writer[0][i][5],writer[0][i][6])
+                temp = R.from_quat([writer[i][j][3],writer[0][i][4],writer[0][i][5],writer[0][i][6]])
+                temp = temp.as_matrix()
+                temp = temp.flatten()
                 for k in range(len(temp)):
                     writer[i][j].append(temp[k])
-
+    
     write_csv(writer,savedir)
 
 

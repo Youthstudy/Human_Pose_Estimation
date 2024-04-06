@@ -17,7 +17,7 @@ from tensorflow import keras
 # print(len(logical_gpus))
 
 # read data-sensor.csv
-a = pd.read_csv('signalimu_walk2ms.csv')
+a = pd.read_csv('dataset/signalimu_walk2ms.csv')
 dataframe = a[[' QuatW',' QuatX',' QuatY',' QuatZ',' LinAccX (g)',' LinAccY (g)',' LinAccZ (g)']]
 pd_value = dataframe.values
 
@@ -85,22 +85,4 @@ plt.plot(testY[:100,1])
 plt.plot(testPredict[:100,1])
 plt.plot()
 
-# set predict_data
-predict_begin = 1
-predict_num = 100
-predict_result = np.zeros((predict_num+look_back,features),dtype=float)
-for i in range(look_back):
-    predict_result[i] = testX[-predict_begin:][0,i]
 
-# predict
-for i in range(predict_num):
-    begin_data = np.reshape(predict_result[i:i+look_back,], (predict_begin, look_back, features))
-    predict_data = model.predict(begin_data) 
-    predict_result[look_back+i] = predict_data
-    buff = predict_result[i+1:i+look_back]
-    predict_call_back = np.append(buff,predict_data,axis=0)
-
-# show plot
-plt.plot(predict_result[-predict_num:,5])
-plt.plot()
-plt.show()

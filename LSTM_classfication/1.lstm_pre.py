@@ -19,7 +19,7 @@ def create_dataset(dataset, look_back=1):
 	return numpy.array(dataX), numpy.array(dataY)
 
 numpy.random.seed(7)
-dataframe =  read_csv('LSTM_classfication/dataset/111-1-1_solved/4.csv')
+dataframe =  read_csv('dataset/111-1-1_solved/4.csv')
 
 # r = R.from_quat()
 dataset = dataframe[[' TimeStamp (s)',' QuatW',' QuatX',

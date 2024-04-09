@@ -17,7 +17,7 @@ from tensorflow import keras
 # print(len(logical_gpus))
 
 # read data-sensor.csv
-a = pd.read_csv('dataset/signalimu_walk2ms.csv')
+a = pd.read_csv('dataset/singalimu_walk5ms.csv')
 dataframe = a[[' QuatW',' QuatX',' QuatY',' QuatZ',' LinAccX (g)',' LinAccY (g)',' LinAccZ (g)']]
 pd_value = dataframe.values
 
@@ -30,6 +30,7 @@ look_back = 100
 features = 7
 step_out = 1
 epochs = 100
+batch_size = 16
 
 # ========= numpy train ===========
 def create_dataset(dataset, look_back):
@@ -43,9 +44,6 @@ def create_dataset(dataset, look_back):
 #训练数据太少 look_back并不能过大
 trainX,trainY  = create_dataset(trainlist,look_back)
 testX,testY = create_dataset(testlist,look_back)
-print(trainX[0],trainY[0])
-print(trainX.shape,trainY.shape)
-print(testX.shape,testY.shape)
 
 # ========== set dataset ======================
 trainX = np.reshape(trainX, (trainX.shape[0], trainX.shape[1], features))
@@ -62,27 +60,29 @@ model.compile(metrics=['accuracy'], loss='mean_squared_error', optimizer='adam')
 
 model.summary()
 
-history = model.fit(trainX, trainY, validation_data=(testX, testY),epochs=epochs, verbose=1).history
-model.save("lstm-model.h5")
+history = model.fit(trainX, trainY, batch_size= batch_size,validation_data=(testX, testY),epochs=epochs, verbose=1).history
+model.save("model_data/lstm-model1.h5")
 
+plt.figure()
 plt.plot(history['loss'], linewidth=2, label='Train')
 plt.plot(history['val_loss'], linewidth=2, label='Test')
 plt.legend(loc='upper right')
 plt.title('Model loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
+plt.savefig("model_loss.png")
 #plt.ylim(ymin=0.70,ymax=1)
-plt.show()
+
 
 trainPredict = model.predict(trainX)
 testPredict = model.predict(testX)
 
-plt.plot(trainY[:100,1])
-plt.plot(trainPredict[:100,1])
-plt.show()
+plt.figure()
+plt.plot(testY,label = "testY")
+plt.plot(testPredict,label = "testPredict")
+plt.legend(loc = 4)
+plt.savefig("testY.png")
 
-plt.plot(testY[:100,1])
-plt.plot(testPredict[:100,1])
-plt.plot()
+plt.show()
 
 

@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow import keras
 import csv
 
-look_back = 100
+look_back = 10
 features = 7
 step_out = 1
 epochs = 100
@@ -20,7 +20,7 @@ dataframe = a[[' QuatW',' QuatX',' QuatY',' QuatZ',' LinAccX (g)',' LinAccY (g)'
 pd_value = dataframe.values
 
 # ========= read model ===================
-model = keras.models.load_model("model_data/lstm-model.h5")
+model = keras.models.load_model("model_data/lstm-model1.h5")
 
 # ========= split dataset ===================
 train_size = int(len(pd_value) * split)
@@ -46,10 +46,8 @@ predict_begin = 1
 predict_num = 100
 predict_result = np.zeros((testY.shape[0],features),dtype=float)
 
-print(testX[0].shape)
-
 for i in range(len(testX)):
-    data = np.reshape(testX[i],(1,100,7))
+    data = np.reshape(testX[i],(1,look_back,features))
     predict_data = model.predict(data,verbose = 0)
     predict_result[i] = predict_data
 
@@ -72,21 +70,21 @@ for i in range(predict_result.shape[1]):
     plt.title(f"{a[i]}")
     plt.savefig(f"model_data/{a[i]}.png")
     
-write_csv(predict_result,"model_data")
-# for i in range(look_back):
-#     predict_result[i] = testX[-predict_begin:][0,i]
+
+for i in range(look_back):
+    predict_result[i] = testX[-predict_begin:][0,i]
 
 
 
-# # predict
-# for i in range(predict_num):
-#     begin_data = np.reshape(predict_result[i:i+look_back,], (predict_begin, look_back, features))
-#     predict_data = model.predict(begin_data) 
-#     predict_result[look_back+i] = predict_data
-#     buff = predict_result[i+1:i+look_back]
-#     predict_call_back = np.append(buff,predict_data,axis=0)
+# predict
+for i in range(predict_num):
+    begin_data = np.reshape(predict_result[i:i+look_back,], (predict_begin, look_back, features))
+    predict_data = model.predict(begin_data) 
+    predict_result[look_back+i] = predict_data
+    buff = predict_result[i+1:i+look_back]
+    predict_call_back = np.append(buff,predict_data,axis=0)
 
-# # show plot
-# plt.plot(predict_result[-predict_num:,5])
-# plt.plot()
-# plt.show()
+# show plot
+plt.plot(predict_result[-predict_num:,5])
+plt.plot()
+plt.show()

@@ -26,7 +26,7 @@ train_size = int(len(pd_value) * 0.8)
 trainlist = pd_value[:train_size]
 testlist = pd_value[train_size:]
 
-look_back = 100
+look_back = 10
 features = 7
 step_out = 1
 epochs = 100
@@ -77,11 +77,14 @@ plt.savefig("model_loss.png")
 trainPredict = model.predict(trainX)
 testPredict = model.predict(testX)
 
-plt.figure()
-plt.plot(testY,label = "testY")
-plt.plot(testPredict,label = "testPredict")
-plt.legend(loc = 4)
-plt.savefig("testY.png")
+for i in range(testPredict.shape[1]):
+    plt.figure()
+    plt.plot(testY[:,i],label = "real_data")
+    plt.plot(testPredict[:,i],label = "predict_data")
+    plt.legend(loc="lower right")
+    plt.title(f"{a[i]}")
+    plt.savefig(f"model_data/{a[i]}.png")
+    
 
 plt.show()
 
